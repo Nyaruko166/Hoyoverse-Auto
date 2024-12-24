@@ -3,7 +3,7 @@ package me.nyaruko166.michosauto.service;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.nyaruko166.michosauto.model.AccountData;
+import me.nyaruko166.michosauto.model.GameData;
 import me.nyaruko166.michosauto.util.CookieUtil;
 import me.nyaruko166.michosauto.util.HttpUtil;
 import okhttp3.Headers;
@@ -21,9 +21,9 @@ public class HoyoService {
 
     Logger log = LogManager.getLogger(HoyoService.class);
 
-    public List<AccountData> getAccountInfo(String cookie) {
+    public List<GameData> getAccountInfo(String cookie) {
         Gson gson = new Gson();
-        List<AccountData> lstAccountData = new ArrayList<>();
+        List<GameData> lstGameData = new ArrayList<>();
 
         log.info("Getting account info...");
         String uid = CookieUtil.getCookieValue(cookie, CookieUtil.UID);
@@ -38,8 +38,8 @@ public class HoyoService {
         }
 
         JsonArray dataArr = jsonRes.get("data").getAsJsonObject().get("list").getAsJsonArray();
-        dataArr.forEach(data -> lstAccountData.add(gson.fromJson(data, AccountData.class)));
+        dataArr.forEach(data -> lstGameData.add(gson.fromJson(data, GameData.class)));
 
-        return lstAccountData;
+        return lstGameData;
     }
 }

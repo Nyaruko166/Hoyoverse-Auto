@@ -1,6 +1,5 @@
 package me.nyaruko166.michosauto.model;
 
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +14,7 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-public class AccountData {
+public class GameData {
 
     @SerializedName("game_id")
     private Integer gameId;
@@ -39,4 +38,5 @@ public class AccountData {
     @SerializedName("region_name")
     private String regionName;
 
+    private String refreshedCookie;
 }

@@ -21,11 +21,9 @@ public class AccountConfig {
 
     private String type;
 
-    private String cookie;
-
     private List<data> data;
 
-    private record data(String cookie, boolean checkIn, boolean redeemCode) {
+    public record data(String cookie, boolean checkIn, boolean redeemCode) {
     }
 
 }

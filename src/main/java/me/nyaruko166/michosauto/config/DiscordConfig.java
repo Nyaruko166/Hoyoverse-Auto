@@ -7,18 +7,20 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
 @ToString
-public class AppConfig {
+public class DiscordConfig {
 
-    private DiscordConfig discord;
+    private boolean active;
 
-    private List<AccountConfig> accounts;
+    private String discordToken;
+
+    private String guildId;
+
+    private String channelId;
 
 }

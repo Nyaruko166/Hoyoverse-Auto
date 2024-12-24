@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class HttpUtil {
 
@@ -61,10 +62,18 @@ public class HttpUtil {
         return executeRequest(request);
     }
 
-    public static String urlParamBuilder(String baseUrl, Map<String, String> params) {
+    public static String urlParamBuilder(String baseUrl, List<String> params) {
+
+        Map<String, String> mapParams = params.stream()
+                                              // Split each string by ":" into key-value pairs
+                                              .map(entry -> entry.split(":", 2))
+                                              .collect(Collectors.toMap(
+                                                      parts -> parts[0].trim(), // Trim key
+                                                      parts -> parts[1].trim()  // Trim value
+                                              ));
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(baseUrl).newBuilder();
-        for (Map.Entry<String, String> entry : params.entrySet()) {
+        for (Map.Entry<String, String> entry : mapParams.entrySet()) {
             urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
         }
 
