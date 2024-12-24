@@ -10,6 +10,7 @@ import okhttp3.Response;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +19,13 @@ import java.util.stream.Collectors;
 public class HttpUtil {
 
     public static String APPLICATION_JSON = "Accept: application/json";
-    public static String USER_AGENT = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+    public static List<String> HoyoLab = List.of(
+            "Referer: https://act.hoyolab.com",
+            "x-rpc-app_version: 1.5.0",
+            "x-rpc-client_type: 5",
+            "x-rpc-language: en-us",
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    );
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -87,8 +94,10 @@ public class HttpUtil {
     }
 
     public static Headers headersBuilder(List<String> lstHeaders) {
+        List<String> mergedHeaders = new ArrayList<>(HoyoLab);
+        mergedHeaders.addAll(lstHeaders);
         Headers.Builder builder = new Headers.Builder();
-        lstHeaders.forEach(builder::add);
+        mergedHeaders.forEach(builder::add);
         return builder.build();
     }
 

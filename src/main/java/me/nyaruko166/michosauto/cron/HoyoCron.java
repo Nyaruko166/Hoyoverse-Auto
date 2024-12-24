@@ -25,7 +25,7 @@ public class HoyoCron {
 
     @Scheduled(cron = "0 0 3 * * ?", zone = "GMT+7")
     public void runOnDailyReset() {
-//        List<AccountData> lstAccount = hoyoService.getAccountInfo();
+//        List<AccountData> lstAccount = hoyoService.getGameInfo();
     }
 
     private void updateCookie(){

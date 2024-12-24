@@ -39,12 +39,4 @@ public class StarRailService {
     public String redeemCode(String cookie, String redeemCode) {
         return null;
     }
-
-//    public static void main(String[] args) throws FileNotFoundException {
-//        AccountConfig multipleGameAccount = Config.getProperty().getAccounts()
-//                                                  .stream().filter(account -> account.isActive() && account.getType().equalsIgnoreCase("multiple"))
-//                                                  .findAny().orElse(null);
-//        String res = new StarRailService().signIn(multipleGameAccount.getData().get(0).cookie());
-//        System.out.println(res);
-//    }
 }

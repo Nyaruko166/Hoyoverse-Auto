@@ -36,7 +36,6 @@ public class ZenlessService {
     public String getSignInfo(String cookie) {
         Headers headers = HttpUtil.headersBuilder(List.of(HttpUtil.APPLICATION_JSON,
                 "Cookie: %s".formatted(cookie),
-                HttpUtil.USER_AGENT,
                 "x-rpc-signgame: zzz"));
         return HttpUtil.getRequest(SIGN_INFO_API, headers);
     }
@@ -45,7 +44,6 @@ public class ZenlessService {
     public String signIn(String cookie) {
         Headers headers = HttpUtil.headersBuilder(List.of(HttpUtil.APPLICATION_JSON,
                 "Cookie: %s".formatted(cookie),
-                HttpUtil.USER_AGENT,
                 "x-rpc-signgame: zzz"));
         return HttpUtil.postRequest(SIGN_API, HttpUtil.requestBodyBuilder(""), headers);
     }
