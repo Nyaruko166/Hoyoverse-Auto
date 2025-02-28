@@ -1,15 +1,13 @@
 package me.nyaruko166.michosauto.service;
 
+import me.nyaruko166.michosauto.model.GameData;
 import me.nyaruko166.michosauto.util.CookieUtil;
-import me.nyaruko166.michosauto.util.GeneralUtil;
 import me.nyaruko166.michosauto.util.HttpUtil;
 import okhttp3.Headers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ZenlessService {
@@ -19,8 +17,8 @@ public class ZenlessService {
     private final String SIGN_API = "https://sg-public-api.hoyolab.com/event/luna/zzz/os/sign?act_id=%s".formatted(ACT_ID);
     private final String REDEEM_API = "https://public-operation-nap.hoyoverse.com/common/apicdkey/api/webExchangeCdkey";
 
-    @Autowired
-    private HoyoService hoyoService;
+//    @Autowired
+//    private HoyoService hoyoService;
 
 //    public static void main(String[] args) {
 //        String url = "https://sg-act-nap-api.hoyolab.com/event/game_record_zzz/api/zzz/note?server=prod_gf_jp&role_id=1300994756";
@@ -48,8 +46,8 @@ public class ZenlessService {
         return HttpUtil.postRequest(SIGN_API, HttpUtil.requestBodyBuilder(""), headers);
     }
 
-    public String redeemCode(String cookie, String redeemCode) {
-        String parsedCookie = CookieUtil.parseCookie(cookie, List.of(
+    public String redeemCode(GameData gameData, String refreshedCookies, String redeemCode) {
+        String parsedCookie = CookieUtil.parseCookie(refreshedCookies, List.of(
                 CookieUtil.COOKIE_TOKEN_V2,
                 CookieUtil.ACCOUNT_MID_V2,
                 CookieUtil.ACCOUNT_ID_V2,
@@ -58,16 +56,17 @@ public class ZenlessService {
         ), true);
 
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String gameRoleId = CookieUtil.getCookieValue(cookie, CookieUtil.UID);
+        String gameRoleId = gameData.getGameRoleId();
+        String region = gameData.getRegion();
 
-        Headers headers = HttpUtil.headersBuilder(List.of("Cookie: %s".formatted(parsedCookie)));
+        Headers headers = HttpUtil.headersBuilderEmpty(List.of("Cookie: %s".formatted(parsedCookie)));
 
         String url = HttpUtil.urlParamBuilder(REDEEM_API, List.of(
                 "t: %s".formatted(timestamp),
                 "lang: en",
                 "game_biz: nap_global",
                 "uid: %s".formatted(gameRoleId),
-                "region: prod_gf_jp", //Todo Change later to match account region
+                "region: %s".formatted(region),
                 "cdkey: %s".formatted(redeemCode)
         ));
         return HttpUtil.getRequest(url, headers);

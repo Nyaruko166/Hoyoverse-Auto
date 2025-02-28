@@ -14,12 +14,11 @@ import okhttp3.Headers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class HoyoService {
@@ -33,12 +32,35 @@ public class HoyoService {
     @Autowired
     private AccountRepository accountRepository;
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void checkIn(){
-        List<Account> accounts = accountRepository.findByType("multiple");
-        accounts.forEach(account -> {
+    @Autowired
+    private ZenlessService zenlessService;
 
-        });
+//    @EventListener(ApplicationReadyEvent.class)
+//    public void checkIn() {
+//        List<Account> accounts = accountRepository.findByType("multiple");
+//        accounts.forEach(account -> {
+//
+//        });
+//    }
+
+    public void redeemCode(Map<String, String> params) {
+        //Todo act according to game type
+        //Todo logging
+        Account account = accountRepository.findById(Integer.valueOf(params.get("id"))); //dummy later change to smt else
+        List<GameData> lstGameData = getGameInfo(account.getCookie());
+        String refreshedCookies = CookieUtil.getNewCookie(account.getCookie());
+        account.setCookie(refreshedCookies);
+
+        accountRepository.save(account);
+
+        for (GameData gameData : lstGameData) {
+            Integer gameId = gameData.getGameId();
+//            if (gameId == 1 && params.get("type").equalsIgnoreCase(GameType.Honkai3rd))
+            if (gameId == 8) {
+                String res = zenlessService.redeemCode(gameData, refreshedCookies, params.get("code"));
+                System.out.println(res);
+            }
+        }
     }
 
     public Account addAccount(AccountRequest accountRequest) {
@@ -55,7 +77,7 @@ public class HoyoService {
         return accountRepository.save(account);
     }
 
-    public CookieInfo getHoyoAccountInfo(String cookie) {
+    private CookieInfo getHoyoAccountInfo(String cookie) {
         log.info("Getting hoyolab account info");
         Headers headers = HttpUtil.headersBuilder(List.of(
                 "Cookie: %s".formatted(cookie)
@@ -88,6 +110,14 @@ public class HoyoService {
         dataArr.forEach(data -> lstGameData.add(gson.fromJson(data, GameData.class)));
 
         return lstGameData;
+    }
+
+    public void getAllGameData() {
+        List<Account> lstAccounts = accountRepository.findByType("multiple");
+        lstAccounts.forEach(account -> {
+            List<GameData> lstGameData = getGameInfo(account.getCookie());
+            lstGameData.forEach(gameData -> System.out.println(gameData.toString()));
+        });
     }
 
 //    public static void main(String[] args) {

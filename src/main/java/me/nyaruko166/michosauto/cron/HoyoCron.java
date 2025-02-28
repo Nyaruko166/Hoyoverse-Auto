@@ -28,19 +28,19 @@ public class HoyoCron {
 //        List<AccountData> lstAccount = hoyoService.getGameInfo();
     }
 
-    private void updateCookie(){
-        Json5Object configJson = Config.getRawProperty();
-        configJson.get("accounts").getAsJson5Array().forEach(accounts -> {
-            if (accounts.getAsJson5Object().get("active").getAsBoolean()){
-                accounts.getAsJson5Object().get("data").getAsJson5Array().forEach(data ->{
-                    if (!data.getAsJson5Object().get("cookie").getAsString().isBlank()){
-                        String oldCookie = data.getAsJson5Object().get("cookie").getAsString();
-                        Map<String,String> refreshCookie =
-                                CookieUtil.getNewCookie(oldCookie);
-//                        data.
-                    }
-                });
-            };
-        });
-    }
+//    private void updateCookie(){
+//        Json5Object configJson = Config.getRawProperty();
+//        configJson.get("accounts").getAsJson5Array().forEach(accounts -> {
+//            if (accounts.getAsJson5Object().get("active").getAsBoolean()){
+//                accounts.getAsJson5Object().get("data").getAsJson5Array().forEach(data ->{
+//                    if (!data.getAsJson5Object().get("cookie").getAsString().isBlank()){
+//                        String oldCookie = data.getAsJson5Object().get("cookie").getAsString();
+//                        Map<String,String> refreshCookie =
+//                                CookieUtil.getNewCookie(oldCookie);
+////                        data.
+//                    }
+//                });
+//            };
+//        });
+//    }
 }

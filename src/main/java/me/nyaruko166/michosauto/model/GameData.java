@@ -37,6 +37,4 @@ public class GameData {
 
     @SerializedName("region_name")
     private String regionName;
-
-    private String refreshedCookie;
 }

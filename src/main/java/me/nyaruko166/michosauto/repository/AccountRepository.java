@@ -11,4 +11,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     List<Account> findByType(String type);
 
+    Account findById(Integer id);
 }
