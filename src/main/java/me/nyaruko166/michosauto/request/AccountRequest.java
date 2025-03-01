@@ -25,4 +25,5 @@ public class AccountRequest {
     @NotNull
     private Boolean redeem;
 
+    private String discordId;
 }

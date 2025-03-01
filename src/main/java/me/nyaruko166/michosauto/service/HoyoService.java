@@ -48,7 +48,7 @@ public class HoyoService {
         //Todo logging
         Account account = accountRepository.findById(Integer.valueOf(params.get("id"))); //dummy later change to smt else
         List<GameData> lstGameData = getGameInfo(account.getCookie());
-        String refreshedCookies = CookieUtil.getNewCookie(account.getCookie());
+        String refreshedCookies = CookieUtil.getNewCookie(account);
         account.setCookie(refreshedCookies);
 
         accountRepository.save(account);
@@ -68,7 +68,9 @@ public class HoyoService {
 
         Account account = Account.builder()
                                  .id(null)
-                                 .accountId(cookieInfo.getAccountId())
+                                 .hoyoUid(cookieInfo.getHoyoUid())
+                                 .hoyoName(cookieInfo.getHoyoName())
+                                 .accountName(cookieInfo.getAccountName())
                                  .codeRedeem(accountRequest.getRedeem())
                                  .cookie(accountRequest.getCookie())
                                  .type(accountRequest.getType())
@@ -112,22 +114,11 @@ public class HoyoService {
         return lstGameData;
     }
 
-    public void getAllGameData() {
-        List<Account> lstAccounts = accountRepository.findByType("multiple");
-        lstAccounts.forEach(account -> {
-            List<GameData> lstGameData = getGameInfo(account.getCookie());
-            lstGameData.forEach(gameData -> System.out.println(gameData.toString()));
-        });
+    public List<Account> getAllAccount() {
+        return accountRepository.findAll();
     }
 
-//    public static void main(String[] args) {
-//
-//        AccountConfig multipleGameAccount = Config.getProperty().getAccounts()
-//                                                  .stream().filter(account -> account.isActive() && account.getType().equalsIgnoreCase("multiple"))
-//                                                  .findAny().orElse(null);
-//
-//        CookieInfo cookieInfo = new HoyoService().getHoyoAccountInfo(multipleGameAccount.getData().get(0).cookie());
-//
-//        System.out.println(cookieInfo.toString());
-//    }
+    public Account updateAcount(Account account) {
+        return accountRepository.save(account);
+    }
 }

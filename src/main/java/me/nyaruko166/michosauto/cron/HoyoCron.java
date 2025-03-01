@@ -1,19 +1,22 @@
 package me.nyaruko166.michosauto.cron;
 
-import de.marhali.json5.Json5Object;
-import me.nyaruko166.michosauto.config.Config;
+import me.nyaruko166.michosauto.model.Account;
 import me.nyaruko166.michosauto.service.HoyoService;
 import me.nyaruko166.michosauto.util.CookieUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.util.List;
 
 @Component
 @EnableScheduling
 public class HoyoCron {
+
+    private Logger log = LogManager.getLogger(HoyoCron.class);
 
     @Autowired
     private HoyoService hoyoService;
@@ -28,19 +31,13 @@ public class HoyoCron {
 //        List<AccountData> lstAccount = hoyoService.getGameInfo();
     }
 
-//    private void updateCookie(){
-//        Json5Object configJson = Config.getRawProperty();
-//        configJson.get("accounts").getAsJson5Array().forEach(accounts -> {
-//            if (accounts.getAsJson5Object().get("active").getAsBoolean()){
-//                accounts.getAsJson5Object().get("data").getAsJson5Array().forEach(data ->{
-//                    if (!data.getAsJson5Object().get("cookie").getAsString().isBlank()){
-//                        String oldCookie = data.getAsJson5Object().get("cookie").getAsString();
-//                        Map<String,String> refreshCookie =
-//                                CookieUtil.getNewCookie(oldCookie);
-////                        data.
-//                    }
-//                });
-//            };
-//        });
-//    }
+    private void updateCookie(){
+        List<Account> lstAccounts = hoyoService.getAllAccount();
+        for(Account account : lstAccounts){
+            String refreshedCookie = CookieUtil.getNewCookie(account);
+            account.setCookie(refreshedCookie);
+            hoyoService.updateAcount(account);
+            log.info("Cookie for {} updated");
+        }
+    }
 }

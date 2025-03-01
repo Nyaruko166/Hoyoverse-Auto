@@ -17,7 +17,7 @@ import lombok.ToString;
 public class CookieInfo {
 
     @SerializedName("account_id")
-    private String accountId;
+    private String hoyoUid;
 
     @SerializedName("account_name")
     private String accountName;

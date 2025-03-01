@@ -28,8 +28,14 @@ public class Account {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "account_id", length = 50)
-    private String accountId;
+    @Column(name = "hoyo_uid", length = 50)
+    private String hoyoUid;
+
+    @Column(name = "hoyo_name", length = 50)
+    private String hoyoName;
+
+    @Column(name = "account_name", length = 50)
+    private String accountName;
 
     @Column(name = "type", length = 50)
     private String type;
@@ -40,4 +46,6 @@ public class Account {
     @Column(name = "cookie")
     private String cookie;
 
+    @Column(name = "discord_id")
+    private String discordId;
 }

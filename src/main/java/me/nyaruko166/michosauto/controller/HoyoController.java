@@ -29,7 +29,7 @@ public class HoyoController {
 
     @GetMapping("/test")
     public ResponseEntity<?> test() {
-        hoyoService.getAllGameData();
+        hoyoService.getAllAccount();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
