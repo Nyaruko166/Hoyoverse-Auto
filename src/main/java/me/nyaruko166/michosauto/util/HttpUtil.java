@@ -27,6 +27,17 @@ public class HttpUtil {
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Accept: application/json"
     );
+    public static List<String> Skport = List.of(
+            "User-Agent: Skport/0.7.0 (com.gryphline.skport; build:700089; Android 33; ) Okhttp/5.1.0",
+            "Referer: https://game.skport.com/",
+            "Content-Type: application/json",
+            "sk-language: en",
+            "Origin: https://game.skport.com",
+            "Connection: keep-alive",
+            "Sec-Fetch-Dest: empty",
+            "Sec-Fetch-Mode: cors",
+            "Sec-Fetch-Site: same-site"
+    );
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -48,13 +59,11 @@ public class HttpUtil {
 
     public static String postRequest(String url, RequestBody requestBody, Headers headers) {
         if (headers == null) headers = new Headers.Builder().build();
-
         Request request = new Request.Builder()
                 .url(url)
                 .headers(headers)
                 .post(requestBody)
                 .build();
-
         return executeRequest(request);
     }
 
@@ -89,13 +98,12 @@ public class HttpUtil {
     }
 
     public static RequestBody requestBodyBuilder(String jsonBody) {
-
         return RequestBody.create(jsonBody, MediaType.parse("application/json; charset=utf-8"));
-
     }
 
-    public static Headers headersBuilder(List<String> lstHeaders) {
-        List<String> mergedHeaders = new ArrayList<>(HoyoLab);
+    public static Headers headersBuilder(List<String> serviceHeader, List<String> lstHeaders) {
+        List<String> mergedHeaders = new ArrayList<>();
+        if (serviceHeader != null) mergedHeaders = new ArrayList<>(serviceHeader);
         mergedHeaders.addAll(lstHeaders);
         Headers.Builder builder = new Headers.Builder();
         mergedHeaders.forEach(builder::add);

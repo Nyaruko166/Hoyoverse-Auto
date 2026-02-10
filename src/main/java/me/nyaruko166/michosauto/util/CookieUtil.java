@@ -2,7 +2,7 @@ package me.nyaruko166.michosauto.util;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import me.nyaruko166.michosauto.model.Account;
+import me.nyaruko166.michosauto.model.HoyoAccount;
 import okhttp3.Headers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +61,7 @@ public class CookieUtil {
         return null;
     }
 
-    public static String getNewCookie(Account account) {
+    public static String getNewCookie(HoyoAccount account) {
         Headers headers = HttpUtil.headersBuilderEmpty(List.of(
                 "Host: webapi-os.account.hoyoverse.com",
                 "Cookie: %s".formatted(account.getCookie())));

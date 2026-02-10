@@ -1,12 +1,9 @@
 package me.nyaruko166.michosauto.service;
 
-import me.nyaruko166.michosauto.config.AccountConfig;
-import me.nyaruko166.michosauto.config.Config;
 import me.nyaruko166.michosauto.util.HttpUtil;
 import okhttp3.Headers;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 
 @Service
@@ -19,7 +16,7 @@ public class StarRailService {
 
     //{"retcode":0,"message":"OK","data":{"total_sign_day":15,"today":"2024-12-16","is_sign":true,"is_sub":true,"region":"prod_official_asia","sign_cnt_missed":1,"short_sign_day":0,"send_first":false}}
     public String getSignInfo(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab, List.of(
                 "Cookie: %s".formatted(cookie),
                 "x-rpc-signgame: hkrpg"
         ));
@@ -29,7 +26,7 @@ public class StarRailService {
 
     //{"data":null,"message":"You've already checked in today, Trailblazer~","retcode":-5003} if already checked in
     public String signIn(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab, List.of(
                 "Cookie: %s".formatted(cookie),
                 "x-rpc-signgame: hkrpg"
         ));

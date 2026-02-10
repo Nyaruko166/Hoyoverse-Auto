@@ -1,6 +1,6 @@
 package me.nyaruko166.michosauto.cron;
 
-import me.nyaruko166.michosauto.model.Account;
+import me.nyaruko166.michosauto.model.HoyoAccount;
 import me.nyaruko166.michosauto.service.HoyoService;
 import me.nyaruko166.michosauto.util.CookieUtil;
 import org.apache.logging.log4j.LogManager;
@@ -32,8 +32,8 @@ public class HoyoCron {
     }
 
     private void updateCookie(){
-        List<Account> lstAccounts = hoyoService.getAllAccount();
-        for(Account account : lstAccounts){
+        List<HoyoAccount> lstAccounts = hoyoService.getAllAccount();
+        for(HoyoAccount account : lstAccounts){
             String refreshedCookie = CookieUtil.getNewCookie(account);
             account.setCookie(refreshedCookie);
             hoyoService.updateAcount(account);

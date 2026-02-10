@@ -4,7 +4,6 @@ import me.nyaruko166.michosauto.model.GameData;
 import me.nyaruko166.michosauto.util.CookieUtil;
 import me.nyaruko166.michosauto.util.HttpUtil;
 import okhttp3.Headers;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,17 +31,19 @@ public class ZenlessService {
 
     //{"retcode":0,"message":"OK","data":{"total_sign_day":14,"today":"2024-12-14","is_sign":true,"is_sub":false,"region":"","sign_cnt_missed":0,"short_sign_day":0,"send_first":false}}
     public String getSignInfo(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(HttpUtil.APPLICATION_JSON,
-                "Cookie: %s".formatted(cookie),
-                "x-rpc-signgame: zzz"));
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab,
+                List.of(HttpUtil.APPLICATION_JSON,
+                        "Cookie: %s".formatted(cookie),
+                        "x-rpc-signgame: zzz"));
         return HttpUtil.getRequest(SIGN_INFO_API, headers);
     }
 
     //Return {"retcode":0,"message":"OK","data":{"code":"","risk_code":0,"gt":"","challenge":"","success":0,"is_risk":false}}
     public String signIn(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(HttpUtil.APPLICATION_JSON,
-                "Cookie: %s".formatted(cookie),
-                "x-rpc-signgame: zzz"));
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab,
+                List.of(HttpUtil.APPLICATION_JSON,
+                        "Cookie: %s".formatted(cookie),
+                        "x-rpc-signgame: zzz"));
         return HttpUtil.postRequest(SIGN_API, HttpUtil.requestBodyBuilder(""), headers);
     }
 

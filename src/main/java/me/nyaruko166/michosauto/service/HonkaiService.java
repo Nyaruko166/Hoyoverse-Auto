@@ -14,7 +14,7 @@ public class HonkaiService {
     private final static String SIGN_API = "https://sg-public-api.hoyolab.com/event/mani/sign?act_id=%s".formatted(ACT_ID);
 
     public String getSignInfo(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab, List.of(
                 "Cookie: %s".formatted(cookie)
         ));
 
@@ -22,7 +22,7 @@ public class HonkaiService {
     }
 
     public String signIn(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(List.of(
+        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab, List.of(
                 "Cookie: %s".formatted(cookie)
         ));
         return HttpUtil.postRequest(SIGN_API, HttpUtil.requestBodyBuilder(""), headers);

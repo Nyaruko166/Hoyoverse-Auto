@@ -21,7 +21,7 @@ import lombok.ToString;
 @Setter
 @Builder
 @ToString
-public class Account {
+public class HoyoAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
