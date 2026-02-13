@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import me.nyaruko166.michosauto.config.Config;
 import me.nyaruko166.michosauto.discord.listener.SlashCommandListener;
 import me.nyaruko166.michosauto.model.EndfieldReward;
+import me.nyaruko166.michosauto.model.SkportAccount;
 import me.nyaruko166.michosauto.service.SkportService;
 import me.nyaruko166.michosauto.util.GeneralUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -73,12 +74,11 @@ public class Bot {
                                 .addChoice("Hoyoverse | Michos | Cognosphere", "michos")
                                 .addChoice("Skport", "skport")
                         )
-
         ).queue();
     }
 
-    public void sendRewardInfo(List<EndfieldReward> lstReward, String ownerId, String skGameRole) {
-        jda.openPrivateChannelById(ownerId).queue(privateChannel -> {
+    public void sendRewardInfo(List<EndfieldReward> lstReward, SkportAccount account) {
+        jda.openPrivateChannelById(account.getOwnerDiscordId()).queue(privateChannel -> {
             List<MessageEmbed> lstEmbed = new ArrayList<>();
             for (EndfieldReward reward : lstReward) {
                 lstEmbed.add(new EmbedBuilder()
@@ -86,7 +86,7 @@ public class Bot {
                         .setFooter(GeneralUtil.getDiscordTimeStamp(jda))
                         .setTitle(lstReward.indexOf(reward) == 0 ?
                                 "Daily check in for account uid: %s completed !!"
-                                        .formatted(skGameRole.split("_")[1]) : "Gift: #%s"
+                                        .formatted(account.getSkGameRole().split("_")[1]) : "Gift: #%s"
                                 .formatted(lstReward.indexOf(reward) + 1))
                         .setThumbnail(SkportService.endfieldIcon)
                         .addField("Check in rewards:", "%s x%s"
@@ -95,6 +95,21 @@ public class Bot {
                         .build());
             }
             privateChannel.sendMessageEmbeds(lstEmbed).queue();
+        });
+    }
+
+    public void sendEmbedMessage(EndfieldReward reward, SkportAccount account) {
+        jda.openPrivateChannelById(account.getOwnerDiscordId()).queue(privateChannel -> {
+            privateChannel.sendMessageEmbeds(new EmbedBuilder()
+                    .setColor(Color.GREEN)
+                    .setFooter(GeneralUtil.getDiscordTimeStamp(jda))
+                    .setTitle("Stopped auto check-in since you already check in today !!")
+                    .setThumbnail(SkportService.endfieldIcon)
+                    .addField("Check in rewards:", "%s x%s"
+                            .formatted(reward.getRewardName(),
+                                    reward.getRewardCount()), false)
+                    .setImage(reward.getRewardIcon())
+                    .build()).queue();
         });
     }
 }

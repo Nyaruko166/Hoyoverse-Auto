@@ -5,17 +5,20 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 public class GeneralUtil {
 
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private static final String DS_SALT = "6s25p5ox5y14umn1p61aqyyvbvvl3lrt";
+    private static final Pattern URL_ENCODED_PATTERN = Pattern.compile("%[0-9a-fA-F]{2}");
 
     public static String generateDS() {
         // Get the current Unix timestamp in seconds
@@ -100,6 +103,17 @@ public class GeneralUtil {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    public static String decodeUrl(String url) {
+        if (url.indexOf('%') >= 0 && URL_ENCODED_PATTERN.matcher(url).find()) {
+            return URLDecoder.decode(url, StandardCharsets.UTF_8);
+        }
+        return url;
+    }
+
+    public static String getUid(String skGameRole) {
+        return skGameRole.split("_")[1];
     }
 
 }

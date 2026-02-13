@@ -3,6 +3,7 @@ package me.nyaruko166.michosauto.discord.listener;
 import lombok.extern.slf4j.Slf4j;
 import me.nyaruko166.michosauto.model.EndfieldReward;
 import me.nyaruko166.michosauto.model.SkportAccount;
+import me.nyaruko166.michosauto.request.SkportDTO;
 import me.nyaruko166.michosauto.service.SkportService;
 import me.nyaruko166.michosauto.util.GeneralUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -13,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -27,12 +27,13 @@ public class SlashCommandListener extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+        log.info("Slash command '{}' invoked by '{}'", event.getName(), event.getUser().getAsTag());
         switch (event.getName()) {
             case "add" -> {
                 String subCommandName = event.getSubcommandName();
                 if (subCommandName.equals("skport")) {
                     String encodedCred = event.getOption("account_token").getAsString();
-                    String decodedCred = URLDecoder.decode(encodedCred, StandardCharsets.UTF_8);
+                    String decodedCred = GeneralUtil.decodeUrl(encodedCred);
                     String skGameRole = event.getOption("sk_game_role").getAsString();
                     String authorTag = event.getUser().getAsTag();
                     String authorId = event.getUser().getId();
@@ -44,8 +45,10 @@ public class SlashCommandListener extends ListenerAdapter {
                                                                .ownerName(authorTag)
                                                                .build();
                     if (skportService.addAccount(skportAccount).getId() != null) {
+                        log.info("Endfield account uid: {} saved successfully by {}.", GeneralUtil.getUid(skportAccount.getSkGameRole()), authorTag);
                         event.reply("Endfield account saved successfully.").setEphemeral(true).queue();
                     } else {
+                        log.error("Failed to save endfield account by {}.", authorTag);
                         event.reply("Failed to save endfield account.").setEphemeral(true).queue();
                     }
                 }
@@ -58,25 +61,43 @@ public class SlashCommandListener extends ListenerAdapter {
                     }
                     case "endfield" -> {
                         List<SkportAccount> lstAccounts = skportService.getAccountsByDiscordId(authorId);
+                        deleteOriginalMessage(event);
                         for (SkportAccount account : lstAccounts) {
-                            log.info("Starting manual check-in for account uid: {}", account.getSkGameRole().split("_")[1]);
-                            List<EndfieldReward> rewards = skportService.claimAttendance(account);
-                            List<MessageEmbed> lstEmbed = new ArrayList<>();
-                            for (EndfieldReward reward : rewards) {
-                                lstEmbed.add(new EmbedBuilder()
+                            String uid = GeneralUtil.getUid(account.getSkGameRole());
+                            log.info("Starting manual check-in for account uid: {}", uid);
+                            SkportDTO skportDTO = skportService.attendanceCheck(account);
+                            if (skportDTO.getHasCheckIn()) {
+                                log.info("Stopped manual check-in since Account uid: {} already checked in today.", uid);
+                                sendEmbedMessageToChannel(event, new EmbedBuilder()
                                         .setColor(Color.GREEN)
                                         .setFooter(GeneralUtil.getDiscordTimeStamp(event))
-                                        .setTitle(rewards.indexOf(reward) == 0 ?
-                                                "Manual check in for account uid: %s completed !!"
-                                                        .formatted(account.getSkGameRole().split("_")[1]) : "Gift: #%s".formatted(rewards.indexOf(reward) + 1))
+                                        .setTitle("You already check in today !!")
                                         .setThumbnail(SkportService.endfieldIcon)
                                         .addField("Check in rewards:", "%s x%s"
-                                                .formatted(reward.getRewardName(), reward.getRewardCount()), false)
-                                        .setImage(reward.getRewardIcon())
+                                                .formatted(skportDTO.getLastReward().getRewardName(),
+                                                        skportDTO.getLastReward().getRewardCount()), false)
+                                        .setImage(skportDTO.getLastReward().getRewardIcon())
                                         .build());
+                            } else {
+                                List<EndfieldReward> rewards = skportService.claimAttendance(skportDTO);
+                                List<MessageEmbed> lstEmbed = new ArrayList<>();
+
+                                for (EndfieldReward reward : rewards) {
+                                    lstEmbed.add(new EmbedBuilder()
+                                            .setColor(Color.GREEN)
+                                            .setFooter(GeneralUtil.getDiscordTimeStamp(event))
+                                            .setTitle(rewards.indexOf(reward) == 0 ?
+                                                    "Manual check in for account uid: %s completed !!"
+                                                            .formatted(uid) : "Gift: #%s".formatted(rewards.indexOf(reward) + 1))
+                                            .setThumbnail(SkportService.endfieldIcon)
+                                            .addField("Check in rewards:", "%s x%s"
+                                                    .formatted(reward.getRewardName(), reward.getRewardCount()), false)
+                                            .setImage(reward.getRewardIcon())
+                                            .build());
+                                }
+                                sendEmbedMessageToChannel(event, lstEmbed);
+                                log.info("Manual check-in for account uid: {} completed", uid);
                             }
-                            event.replyEmbeds(lstEmbed).queue();
-                            log.info("Manual check-in for account uid: {} completed", account.getSkGameRole().split("_")[1]);
                         }
                     }
                     case "zzz" -> {
@@ -99,7 +120,7 @@ public class SlashCommandListener extends ListenerAdapter {
                                     
                                     1. Log in to the [SKPort Endfield Portal](https://game.skport.com/endfield/sign-in)
                                     2. Open **Developer Tools** (F12) or (Ctrl Shift C) → **Application** → **Cookies**
-                                    3. Find `ACCOUNT_TOKEN` and copy its value
+                                    3. Find `ACCOUNT_TOKEN` and copy its value (If doesn't exist, refresh the page)
                                     4. Check the URL decode box if needed (replace `%2F` with `/`)
                                     5. Add to /add skport as `account_token`
                                     """)
@@ -125,7 +146,7 @@ public class SlashCommandListener extends ListenerAdapter {
                     event.replyEmbeds(credEb, skroleEb)
                          .setEphemeral(true).queue();
                 } else {
-
+                    //Michos case
                 }
             }
             case "help" -> {
@@ -172,14 +193,23 @@ public class SlashCommandListener extends ListenerAdapter {
                         .setImage("https://i.postimg.cc/qqS7hBKc/endmin-thumb-up.png")
                         .build()).setEphemeral(true).queue();
             }
-//            case "leave" -> {
-//                event.reply("I'm leaving the server now!").setEphemeral(true) // this message is only visible to the command user
-//                     .flatMap(m -> event.getGuild().leave()) // append a follow-up action using flatMap
-//                     .queue(); // enqueue both actions to run in sequence (send message -> leave guild)
-//            }
             default -> {
                 return;
             }
         }
+    }
+
+    private void sendEmbedMessageToChannel(SlashCommandInteractionEvent event, MessageEmbed embedMessage) {
+        event.getChannel().sendMessageEmbeds(embedMessage).queue();
+    }
+
+    private void sendEmbedMessageToChannel(SlashCommandInteractionEvent event, Collection<MessageEmbed> embedMessage) {
+        event.getChannel().sendMessageEmbeds(embedMessage).queue();
+    }
+
+    private void deleteOriginalMessage(SlashCommandInteractionEvent event) {
+        event.deferReply(true).queue(hook -> {
+            hook.deleteOriginal().queue();
+        });
     }
 }

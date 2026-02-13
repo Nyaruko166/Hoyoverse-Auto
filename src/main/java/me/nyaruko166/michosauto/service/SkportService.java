@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import me.nyaruko166.michosauto.model.EndfieldReward;
 import me.nyaruko166.michosauto.model.SkportAccount;
 import me.nyaruko166.michosauto.repository.SkportAccountRepository;
+import me.nyaruko166.michosauto.request.SkportDTO;
 import me.nyaruko166.michosauto.util.GeneralUtil;
 import me.nyaruko166.michosauto.util.HttpUtil;
 import okhttp3.Headers;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Log4j2
 @Service
@@ -48,13 +50,11 @@ public class SkportService {
         return skportAccountRepository.findAll();
     }
 
-    public List<EndfieldReward> claimAttendance(SkportAccount skportAccount) {
-        Map<String, String> mapData = oAuthFlow(skportAccount.getCred());
-        String timeStamp = GeneralUtil.getTimestamp();
-        String sign = generateSignV2(timeStamp, mapData.get("token"));
-        List<String> headerStr = HttpUtil.endFieldHeaders(skportAccount.getSkGameRole(), mapData.get("grantCred"), timeStamp, sign);
-        Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
-        String res = HttpUtil.postRequest(baseUrl + signInUrl, HttpUtil.requestBodyBuilder(""), endfieldHeader);
+    public List<EndfieldReward> claimAttendance(SkportDTO skportDTO) {
+        if (skportDTO.getHasCheckIn()) {
+            return List.of(skportDTO.getLastReward());
+        }
+        String res = HttpUtil.postRequest(baseUrl + signInUrl, HttpUtil.requestBodyBuilder(""), skportDTO.getHeaders());
         JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
         if (jsonRes.get("code").getAsInt() == 0) {
             JsonObject resData = jsonRes.get("data").getAsJsonObject();
@@ -63,32 +63,38 @@ public class SkportService {
             List<EndfieldReward> rewards = new ArrayList<>();
             for (int i = 0; i < rewardsArr.size(); i++) {
                 String awardId = rewardsArr.get(i).getAsJsonObject().get("id").getAsString();
-                String rewardName = resourceMap.get(awardId).getAsJsonObject().get("name").getAsString();
-                String rewardCount = resourceMap.get(awardId).getAsJsonObject().get("count").getAsString();
-                String rewardIcon = resourceMap.get(awardId).getAsJsonObject().get("icon").getAsString();
-                rewards.add(new EndfieldReward(rewardName, rewardCount, rewardIcon));
+                rewards.add(gson.fromJson(resourceMap.get(awardId).toString(), EndfieldReward.class));
             }
             return rewards;
         }
         return null;
     }
 
-//    public void attendanceCheck() {
-//        Map<String, String> mapData = oAuthFlow("/2/Me5ZQESks8K3171DESaM7");
-//        String timeStamp = GeneralUtil.getTimestamp();
-//        String sign = generateSignV2(timeStamp, mapData.get("token"));
-//        List<String> headerStr =
-//                List.of("sk-game-role: %s".formatted("3_4693323606_2"),
-//                        "cred: %s".formatted(mapData.get("grantCred")),
-//                        "platform: %s".formatted(platform),
-//                        "vName: %s".formatted(vName),
-//                        "timestamp: %s".formatted(timeStamp),
-//                        "sign: %s".formatted(sign)
-//                );
-//        Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
-//        String res = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
-//        System.out.println(res);
-//    }
+    public SkportDTO attendanceCheck(SkportAccount skportAccount) {
+        Map<String, String> mapData = oAuthFlow(skportAccount.getCred());
+        String timeStamp = GeneralUtil.getTimestamp();
+        String sign = generateSignV2(timeStamp, mapData.get("token"));
+        List<String> headerStr = HttpUtil.endFieldHeaders(skportAccount.getSkGameRole(), mapData.get("grantCred"), timeStamp, sign);
+        Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
+        String res = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
+        JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
+        if (jsonRes.get("code").getAsInt() == 0) {
+            Boolean hasCheckIn = jsonRes.get("data").getAsJsonObject().get("hasToday").getAsBoolean();
+            JsonArray calendar = jsonRes.getAsJsonObject("data").getAsJsonArray("calendar");
+            String todayRewardId = "";
+            for (int i = calendar.size() - 1; i >= 0; i--) {
+                JsonObject reward = calendar.get(i).getAsJsonObject();
+                if (reward.get("done").getAsBoolean()) {
+                    todayRewardId = reward.get("awardId").getAsString();
+                    break;
+                }
+            }
+            JsonObject resourceInfoMap = jsonRes.getAsJsonObject("data").getAsJsonObject("resourceInfoMap");
+            EndfieldReward reward = gson.fromJson(resourceInfoMap.getAsJsonObject(todayRewardId).toString(), EndfieldReward.class);
+            return SkportDTO.builder().hasCheckIn(hasCheckIn).headers(endfieldHeader).skGameRole(skportAccount.getSkGameRole()).lastReward(reward).build();
+        }
+        return null;
+    }
 
     private Map<String, String> oAuthFlow(String cred) {
         String code = grantCode(cred);
@@ -121,8 +127,10 @@ public class SkportService {
         JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
         if (jsonRes.get("code").getAsInt() == 0) {
             Map<String, String> mapData = new HashMap<>();
-            mapData.put("grantCred", jsonRes.get("data").getAsJsonObject().get("cred").getAsString());
-            mapData.put("token", jsonRes.get("data").getAsJsonObject().get("token").getAsString());
+            String grantCred = jsonRes.get("data").getAsJsonObject().get("cred").getAsString();
+            String token = jsonRes.get("data").getAsJsonObject().get("token").getAsString();
+            mapData.put("grantCred", grantCred);
+            mapData.put("token", token);
             return mapData;
         }
         log.error("Failed to get cred from grant cred url: {}", jsonRes);
