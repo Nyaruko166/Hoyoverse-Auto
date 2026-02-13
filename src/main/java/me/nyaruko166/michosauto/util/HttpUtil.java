@@ -1,5 +1,6 @@
 package me.nyaruko166.michosauto.util;
 
+import me.nyaruko166.michosauto.service.SkportService;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class HttpUtil {
 
     public static String APPLICATION_JSON = "Accept: application/json";
+
     public static List<String> HoyoLab = List.of(
             "Referer: https://act.hoyolab.com",
             "x-rpc-app_version: 1.5.0",
@@ -123,6 +125,16 @@ public class HttpUtil {
         lstHeaders.forEach(builder::add);
 //        mergedHeaders.forEach(builder::add);
         return builder.build();
+    }
+
+    public static List<String> endFieldHeaders(String skGameRole, String grantCred, String timeStamp, String sign) {
+        return List.of("sk-game-role: %s".formatted(skGameRole),
+                "cred: %s".formatted(grantCred),
+                "platform: %s".formatted(SkportService.platform),
+                "vName: %s".formatted(SkportService.vName),
+                "timestamp: %s".formatted(timeStamp),
+                "sign: %s".formatted(sign)
+        );
     }
 
     private static String executeRequest(Request request) {

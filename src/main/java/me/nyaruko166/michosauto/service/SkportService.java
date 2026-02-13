@@ -1,8 +1,10 @@
 package me.nyaruko166.michosauto.service;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.extern.log4j.Log4j2;
+import me.nyaruko166.michosauto.model.EndfieldReward;
 import me.nyaruko166.michosauto.model.SkportAccount;
 import me.nyaruko166.michosauto.repository.SkportAccountRepository;
 import me.nyaruko166.michosauto.util.GeneralUtil;
@@ -12,6 +14,7 @@ import okhttp3.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +23,8 @@ import java.util.Map;
 @Service
 public class SkportService {
 
-    static String platform = "3";
-    static String vName = "1.0.0";
+    public static String platform = "3";
+    public static String vName = "1.0.0";
     static String signInUrl = "/web/v1/game/endfield/attendance";
     static String baseUrl = "https://zonai.skport.com";
     static String grantTokenUrl = "https://as.gryphline.com/user/oauth2/v2/grant";
@@ -41,26 +44,51 @@ public class SkportService {
         return skportAccountRepository.findAllByOwnerDiscordId(discordId);
     }
 
-    public String claimAttendance(SkportAccount skportAccount) {
+    public List<SkportAccount> getAllAccount() {
+        return skportAccountRepository.findAll();
+    }
+
+    public List<EndfieldReward> claimAttendance(SkportAccount skportAccount) {
         Map<String, String> mapData = oAuthFlow(skportAccount.getCred());
         String timeStamp = GeneralUtil.getTimestamp();
         String sign = generateSignV2(timeStamp, mapData.get("token"));
-        List<String> headerStr =
-                List.of("sk-game-role: %s".formatted(skportAccount.getSkGameRole()),
-                        "cred: %s".formatted(mapData.get("grantCred")),
-                        "platform: %s".formatted(platform),
-                        "vName: %s".formatted(vName),
-                        "timestamp: %s".formatted(timeStamp),
-                        "sign: %s".formatted(sign)
-                );
+        List<String> headerStr = HttpUtil.endFieldHeaders(skportAccount.getSkGameRole(), mapData.get("grantCred"), timeStamp, sign);
         Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
         String res = HttpUtil.postRequest(baseUrl + signInUrl, HttpUtil.requestBodyBuilder(""), endfieldHeader);
         JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
         if (jsonRes.get("code").getAsInt() == 0) {
-            return jsonRes.get("data").getAsJsonObject().getAsString();
+            JsonObject resData = jsonRes.get("data").getAsJsonObject();
+            JsonArray rewardsArr = resData.get("awardIds").getAsJsonArray();
+            JsonObject resourceMap = resData.get("resourceInfoMap").getAsJsonObject();
+            List<EndfieldReward> rewards = new ArrayList<>();
+            for (int i = 0; i < rewardsArr.size(); i++) {
+                String awardId = rewardsArr.get(i).getAsJsonObject().get("id").getAsString();
+                String rewardName = resourceMap.get(awardId).getAsJsonObject().get("name").getAsString();
+                String rewardCount = resourceMap.get(awardId).getAsJsonObject().get("count").getAsString();
+                String rewardIcon = resourceMap.get(awardId).getAsJsonObject().get("icon").getAsString();
+                rewards.add(new EndfieldReward(rewardName, rewardCount, rewardIcon));
+            }
+            return rewards;
         }
         return null;
     }
+
+//    public void attendanceCheck() {
+//        Map<String, String> mapData = oAuthFlow("/2/Me5ZQESks8K3171DESaM7");
+//        String timeStamp = GeneralUtil.getTimestamp();
+//        String sign = generateSignV2(timeStamp, mapData.get("token"));
+//        List<String> headerStr =
+//                List.of("sk-game-role: %s".formatted("3_4693323606_2"),
+//                        "cred: %s".formatted(mapData.get("grantCred")),
+//                        "platform: %s".formatted(platform),
+//                        "vName: %s".formatted(vName),
+//                        "timestamp: %s".formatted(timeStamp),
+//                        "sign: %s".formatted(sign)
+//                );
+//        Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
+//        String res = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
+//        System.out.println(res);
+//    }
 
     private Map<String, String> oAuthFlow(String cred) {
         String code = grantCode(cred);

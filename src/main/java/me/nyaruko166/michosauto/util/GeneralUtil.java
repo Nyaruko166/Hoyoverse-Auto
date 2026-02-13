@@ -1,5 +1,6 @@
 package me.nyaruko166.michosauto.util;
 
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import javax.crypto.Mac;
@@ -34,6 +35,12 @@ public class GeneralUtil {
     public static String getDiscordTimeStamp(SlashCommandInteractionEvent event) {
         return String.format("%s - %s",
                 event.getJDA().getSelfUser().getName(),
+                LocalDateTime.now().format(timeFormatter));
+    }
+
+    public static String getDiscordTimeStamp(JDA jda) {
+        return String.format("%s - %s",
+                jda.getSelfUser().getName(),
                 LocalDateTime.now().format(timeFormatter));
     }
 

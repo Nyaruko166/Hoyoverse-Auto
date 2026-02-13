@@ -3,9 +3,14 @@ package me.nyaruko166.michosauto.discord;
 import jakarta.annotation.PostConstruct;
 import me.nyaruko166.michosauto.config.Config;
 import me.nyaruko166.michosauto.discord.listener.SlashCommandListener;
+import me.nyaruko166.michosauto.model.EndfieldReward;
+import me.nyaruko166.michosauto.service.SkportService;
+import me.nyaruko166.michosauto.util.GeneralUtil;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -16,7 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 @Component
 public class Bot {
@@ -42,15 +50,15 @@ public class Bot {
                         .build();
 
         SubcommandData skportCommand = new SubcommandData("skport", "Add a new endfield account to the bot.")
-                .addOption(OptionType.STRING, "cred", "The credential of the account.")
-                .addOption(OptionType.STRING, "sk_game_role", "The game role (3_UID_SERVER) of the account.");
+                .addOption(OptionType.STRING, "account_token", "The account token of the account.")
+                .addOption(OptionType.STRING, "sk_game_role", "The game role (3_UID_SERVER-ID) of the account.");
 
 
         CommandListUpdateAction commands = jda.updateCommands();
         commands.addCommands(
+                Commands.slash("help", "Show useless help message."),
                 Commands.slash("add", "Add a new account to the bot.")
                         .addSubcommands(skportCommand),
-                Commands.slash("test", "Test the bot manually."),
                 Commands.slash("claim", "Start check in game manually.")
                         .addOptions(new OptionData(OptionType.STRING, "game", "Choose the game to check in.", true)
                                 .addChoice("All", "all")
@@ -59,7 +67,34 @@ public class Bot {
                                 .addChoice("Honkai Star Rail", "hsr")
                                 .addChoice("Honkai Impact 3", "hi3")
                                 .addChoice("Genshin Impact", "gi")
+                        ),
+                Commands.slash("guide", "Guide to get required information for adding account.")
+                        .addOptions(new OptionData(OptionType.STRING, "platform", "Choose the platform to get help.", true)
+                                .addChoice("Hoyoverse | Michos | Cognosphere", "michos")
+                                .addChoice("Skport", "skport")
                         )
+
         ).queue();
+    }
+
+    public void sendRewardInfo(List<EndfieldReward> lstReward, String ownerId, String skGameRole) {
+        jda.openPrivateChannelById(ownerId).queue(privateChannel -> {
+            List<MessageEmbed> lstEmbed = new ArrayList<>();
+            for (EndfieldReward reward : lstReward) {
+                lstEmbed.add(new EmbedBuilder()
+                        .setColor(Color.GREEN)
+                        .setFooter(GeneralUtil.getDiscordTimeStamp(jda))
+                        .setTitle(lstReward.indexOf(reward) == 0 ?
+                                "Daily check in for account uid: %s completed !!"
+                                        .formatted(skGameRole.split("_")[1]) : "Gift: #%s"
+                                .formatted(lstReward.indexOf(reward) + 1))
+                        .setThumbnail(SkportService.endfieldIcon)
+                        .addField("Check in rewards:", "%s x%s"
+                                .formatted(reward.getRewardName(), reward.getRewardCount()), false)
+                        .setImage(reward.getRewardIcon())
+                        .build());
+            }
+            privateChannel.sendMessageEmbeds(lstEmbed).queue();
+        });
     }
 }
