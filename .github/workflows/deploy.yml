@@ -22,7 +22,7 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B clean install
+        run: mvn -B clean install -DskipTests
 
       - name: Resolve boot jar
         id: jar

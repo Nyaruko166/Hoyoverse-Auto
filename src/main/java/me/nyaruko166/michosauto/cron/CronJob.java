@@ -5,7 +5,6 @@ import me.nyaruko166.michosauto.discord.Bot;
 import me.nyaruko166.michosauto.model.EndfieldReward;
 import me.nyaruko166.michosauto.model.SkportAccount;
 import me.nyaruko166.michosauto.request.SkportDTO;
-import me.nyaruko166.michosauto.service.HoyoService;
 import me.nyaruko166.michosauto.service.SkportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,8 +18,8 @@ import java.util.List;
 @Log4j2
 public class CronJob {
 
-    @Autowired
-    private HoyoService hoyoService;
+//    @Autowired
+//    private HoyoService hoyoService;
 
     @Autowired
     private SkportService skportService;
@@ -40,7 +39,7 @@ public class CronJob {
         List<SkportAccount> lstSkAccount = skportService.getAllAccount();
         for (SkportAccount account : lstSkAccount) {
             SkportDTO skportDTO = skportService.attendanceCheck(account);
-            if (skportDTO.getHasCheckIn()) {
+            if (!skportDTO.getHasCheckIn()) {
                 List<EndfieldReward> lstReward = skportService.claimAttendance(skportDTO);
                 bot.sendRewardInfo(lstReward, account);
                 log.info("Daily check-in for account uid: {} completed", account.getSkGameRole().split("_")[1]);
