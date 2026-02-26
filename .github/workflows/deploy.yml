@@ -58,16 +58,23 @@ jobs:
           JAR_FILE="$(ls -1 dist/*.jar | head -n 1)"
           cp "${JAR_FILE}" dist/michosauto.jar
 
-      - name: Copy jar to server
-        uses: appleboy/scp-action@v1.0.0
+      - name: Debug downloaded artifact
+        run: |
+          ls -lah dist
+          test -f dist/michosauto.jar
+
+      - name: Copy jar to server (SCP action)
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
           source: dist/michosauto.jar
-          target: /tmp
+          target: /tmp/
           strip_components: 1
+          overwrite: true
+          debug: true
 
       - name: Activate release on server
         uses: appleboy/ssh-action@v1.2.0
