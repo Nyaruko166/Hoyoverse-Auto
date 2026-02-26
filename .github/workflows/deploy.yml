@@ -56,7 +56,7 @@ jobs:
       - name: Rename artifact for upload
         run: |
           JAR_FILE="$(ls -1 dist/*.jar | head -n 1)"
-          cp "${JAR_FILE}" dist/michosautotest.jar
+          cp "${JAR_FILE}" dist/michosauto.jar
 
       - name: Copy jar to server
         uses: appleboy/scp-action@v1.0.0
@@ -67,6 +67,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           source: dist/michosauto.jar
           target: /tmp
+          strip_components: 1
 
       - name: Activate release on server
         uses: appleboy/ssh-action@v1.2.0
@@ -92,7 +93,7 @@ jobs:
             TS="$(date +%Y%m%d%H%M%S)"
             RELEASE_JAR="${RELEASE_DIR}/michosauto-${TS}.jar"
 
-            mv /tmp/dist/michosauto.jar "${RELEASE_JAR}"
+            mv /tmp/michosauto.jar "${RELEASE_JAR}"
             ln -sfn "${RELEASE_JAR}" "${DEPLOY_PATH}/current.jar"
 
             if [ -n "${SERVICE_NAME}" ]; then
