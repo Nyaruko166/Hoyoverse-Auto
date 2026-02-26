@@ -63,6 +63,19 @@ jobs:
           ls -lah dist
           test -f dist/michosauto.jar
 
+      - name: Prepare remote upload directory
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            mkdir -p "$HOME/michosauto_upload"
+            command -v tar
+            ls -ld "$HOME/michosauto_upload"
+
       - name: Copy jar to server (SCP action)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -71,7 +84,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
           source: dist/michosauto.jar
-          target: /tmp/
+          target: ~/michosauto_upload/
           strip_components: 1
           overwrite: true
           debug: true
@@ -100,7 +113,7 @@ jobs:
             TS="$(date +%Y%m%d%H%M%S)"
             RELEASE_JAR="${RELEASE_DIR}/michosauto-${TS}.jar"
 
-            mv /tmp/michosauto.jar "${RELEASE_JAR}"
+            mv "$HOME/michosauto_upload/michosauto.jar" "${RELEASE_JAR}"
             ln -sfn "${RELEASE_JAR}" "${DEPLOY_PATH}/current.jar"
 
             if [ -n "${SERVICE_NAME}" ]; then
