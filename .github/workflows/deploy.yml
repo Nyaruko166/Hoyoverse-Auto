@@ -56,22 +56,22 @@ jobs:
       - name: Rename artifact for upload
         run: |
           JAR_FILE="$(ls -1 dist/*.jar | head -n 1)"
-          cp "${JAR_FILE}" dist/michosauto.jar
+          cp "${JAR_FILE}" dist/MichosAuto.jar
 
       - name: Debug downloaded artifact
         run: |
           ls -lah dist
-          test -f dist/michosauto.jar
+          test -f dist/MichosAuto.jar
 
       - name: Copy jar to server (SCP action)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          source: dist/michosauto.jar
-          target: /home/${{ secrets.SSH_USER }}/
+          source: dist/MichosAuto.jar
+          target: ${{ secrets.DEPLOY_PATH }}/
           strip_components: 1
           overwrite: true
           debug: true
