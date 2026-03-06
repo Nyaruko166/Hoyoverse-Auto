@@ -83,15 +83,14 @@ public class Bot {
             for (EndfieldReward reward : lstReward) {
                 lstEmbed.add(new EmbedBuilder()
                         .setColor(Color.GREEN)
-                        .setFooter(GeneralUtil.getDiscordTimeStamp(jda))
+                        .setFooter(GeneralUtil.getDiscordTimeStamp(jda), GeneralUtil.getDiscordTimeStamp(jda))
                         .setTitle(lstReward.indexOf(reward) == 0 ?
-                                "Daily check in for account uid: %s completed !!"
-                                        .formatted(account.getSkGameRole().split("_")[1]) : "Gift: #%s"
+                                "Daily check in completed !!" : "Gift: #%s"
                                 .formatted(lstReward.indexOf(reward) + 1))
-                        .setThumbnail(SkportService.endfieldIcon)
+                        .setThumbnail(reward.getRewardIcon())
+                        .addField("UID: %s".formatted(account.getUid()), "", false)
                         .addField("Check in rewards:", "%s x%s"
                                 .formatted(reward.getRewardName(), reward.getRewardCount()), false)
-                        .setImage(reward.getRewardIcon())
                         .build());
             }
             privateChannel.sendMessageEmbeds(lstEmbed).queue();

@@ -32,7 +32,7 @@ public class SkportAccount {
     private String cred;
 
     @Column(name = "sk_game_role", length = 50)
-    private String SkGameRole;
+    private String skGameRole;
 
     @Column(name = "owner_name", length = 50)
     private String ownerName;
@@ -40,4 +40,7 @@ public class SkportAccount {
     @Column(name = "owner_discord_id", length = 50)
     private String ownerDiscordId;
 
+    public String getUid() {
+        return skGameRole.split("_")[1];
+    }
 }

@@ -40,12 +40,12 @@ public class SlashCommandListener extends ListenerAdapter {
                     SkportAccount skportAccount = SkportAccount.builder()
                                                                .id(null)
                                                                .cred(decodedCred)
-                                                               .SkGameRole(skGameRole)
+                                                               .skGameRole(skGameRole)
                                                                .ownerDiscordId(authorId)
                                                                .ownerName(authorTag)
                                                                .build();
                     if (skportService.addAccount(skportAccount).getId() != null) {
-                        log.info("Endfield account uid: {} saved successfully by {}.", GeneralUtil.getUid(skportAccount.getSkGameRole()), authorTag);
+                        log.info("Endfield account uid: {} saved successfully by {}.", skportAccount.getUid(), authorTag);
                         event.reply("Endfield account saved successfully.").setEphemeral(true).queue();
                     } else {
                         log.error("Failed to save endfield account by {}.", authorTag);
@@ -63,7 +63,7 @@ public class SlashCommandListener extends ListenerAdapter {
                         List<SkportAccount> lstAccounts = skportService.getAccountsByDiscordId(authorId);
                         deleteOriginalMessage(event);
                         for (SkportAccount account : lstAccounts) {
-                            String uid = GeneralUtil.getUid(account.getSkGameRole());
+                            String uid = account.getUid();
                             log.info("Starting manual check-in for account uid: {}", uid);
                             SkportDTO skportDTO = skportService.attendanceCheck(account);
                             if (skportDTO.getHasCheckIn()) {
@@ -85,14 +85,13 @@ public class SlashCommandListener extends ListenerAdapter {
                                 for (EndfieldReward reward : rewards) {
                                     lstEmbed.add(new EmbedBuilder()
                                             .setColor(Color.GREEN)
-                                            .setFooter(GeneralUtil.getDiscordTimeStamp(event))
+                                            .setFooter(GeneralUtil.getDiscordTimeStamp(event), SkportService.endfieldIcon)
                                             .setTitle(rewards.indexOf(reward) == 0 ?
-                                                    "Manual check in for account uid: %s completed !!"
-                                                            .formatted(uid) : "Gift: #%s".formatted(rewards.indexOf(reward) + 1))
-                                            .setThumbnail(SkportService.endfieldIcon)
+                                                    "Manual check in completed !!" : "Gift: #%s".formatted(rewards.indexOf(reward) + 1))
+                                            .setThumbnail(reward.getRewardIcon())
+                                            .addField("UID: %s".formatted(account.getUid()), "", false)
                                             .addField("Check in rewards:", "%s x%s"
                                                     .formatted(reward.getRewardName(), reward.getRewardCount()), false)
-                                            .setImage(reward.getRewardIcon())
                                             .build());
                                 }
                                 sendEmbedMessageToChannel(event, lstEmbed);
