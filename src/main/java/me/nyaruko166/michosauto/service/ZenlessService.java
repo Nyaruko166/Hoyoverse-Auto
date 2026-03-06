@@ -30,13 +30,13 @@ public class ZenlessService {
 //    }
 
     //{"retcode":0,"message":"OK","data":{"total_sign_day":14,"today":"2024-12-14","is_sign":true,"is_sub":false,"region":"","sign_cnt_missed":0,"short_sign_day":0,"send_first":false}}
-    public String getSignInfo(String cookie) {
-        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab,
-                List.of(HttpUtil.APPLICATION_JSON,
-                        "Cookie: %s".formatted(cookie),
-                        "x-rpc-signgame: zzz"));
-        return HttpUtil.getRequest(SIGN_INFO_API, headers);
-    }
+//    public String getSignInfo(String cookie) {
+//        Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab,
+//                List.of(HttpUtil.APPLICATION_JSON,
+//                        "Cookie: %s".formatted(cookie),
+//                        "x-rpc-signgame: zzz"));
+//        return HttpUtil.getRequest(SIGN_INFO_API, headers);
+//    }
 
     //Return {"retcode":0,"message":"OK","data":{"code":"","risk_code":0,"gt":"","challenge":"","success":0,"is_risk":false}}
     public String signIn(String cookie) {
@@ -70,6 +70,6 @@ public class ZenlessService {
                 "region: %s".formatted(region),
                 "cdkey: %s".formatted(redeemCode)
         ));
-        return HttpUtil.getRequest(url, headers);
+        return HttpUtil.getRequest(url, headers).toString();
     }
 }

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @Log4j2
 @Service
@@ -36,7 +35,7 @@ public class SkportService {
     @Autowired
     private SkportAccountRepository skportAccountRepository;
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     public SkportAccount addAccount(SkportAccount skportAccount) {
         return skportAccountRepository.save(skportAccount);
@@ -76,8 +75,7 @@ public class SkportService {
         String sign = generateSignV2(timeStamp, mapData.get("token"));
         List<String> headerStr = HttpUtil.endFieldHeaders(skportAccount.getSkGameRole(), mapData.get("grantCred"), timeStamp, sign);
         Headers endfieldHeader = HttpUtil.headersBuilder(HttpUtil.Skport, headerStr);
-        String res = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
-        JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
+        JsonObject jsonRes = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
         if (jsonRes.get("code").getAsInt() == 0) {
             Boolean hasCheckIn = jsonRes.get("data").getAsJsonObject().get("hasToday").getAsBoolean();
             JsonArray calendar = jsonRes.getAsJsonObject("data").getAsJsonArray("calendar");

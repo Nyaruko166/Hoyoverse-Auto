@@ -3,9 +3,9 @@ package me.nyaruko166.michosauto.service;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.nyaruko166.michosauto.model.HoyoAccount;
 import me.nyaruko166.michosauto.model.CookieInfo;
 import me.nyaruko166.michosauto.model.GameData;
+import me.nyaruko166.michosauto.model.HoyoAccount;
 import me.nyaruko166.michosauto.repository.HoyoAccountRepository;
 import me.nyaruko166.michosauto.request.AccountRequest;
 import me.nyaruko166.michosauto.util.CookieUtil;
@@ -89,12 +89,11 @@ public class HoyoService {
         log.info("Getting account info...");
         String uid = CookieUtil.getCookieValue(cookie, CookieUtil.UID);
         Headers headers = HttpUtil.headersBuilder(HttpUtil.HoyoLab, List.of("Cookie: %s".formatted(cookie), "x-rpc-language: en-us"));
-        String res = HttpUtil.getRequest(GAME_INFO_API.formatted(uid), headers);
-        JsonObject jsonRes = gson.fromJson(res, JsonObject.class);
+        JsonObject jsonRes = HttpUtil.getRequest(GAME_INFO_API.formatted(uid), headers);
 
         if (jsonRes.get("retcode").getAsInt() != 0) {
             log.error("Something went wrong when getting account info.");
-            log.error(res);
+            log.error(jsonRes);
             return null;
         }
 

@@ -1,5 +1,7 @@
 package me.nyaruko166.michosauto.util;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import me.nyaruko166.michosauto.service.SkportService;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 public class HttpUtil {
 
     public static String APPLICATION_JSON = "Accept: application/json";
+    private static final Gson gson = new Gson();
+
 
     public static List<String> HoyoLab = List.of(
             "Referer: https://act.hoyolab.com",
@@ -48,7 +52,7 @@ public class HttpUtil {
 //            .followRedirects(true)
             .build();
 
-    public static String getRequest(String url, @Nullable Headers headers) {
+    public static JsonObject getRequest(String url, @Nullable Headers headers) {
         if (headers == null) headers = new Headers.Builder().build();
 
         Request request = new Request.Builder()
@@ -56,7 +60,7 @@ public class HttpUtil {
                 .get()
                 .headers(headers)
                 .build();
-        return executeRequest(request);
+        return gson.fromJson(executeRequest(request), JsonObject.class);
     }
 
     public static String postRequest(String url, RequestBody requestBody, Headers headers) {

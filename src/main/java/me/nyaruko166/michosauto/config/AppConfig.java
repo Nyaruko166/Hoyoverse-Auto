@@ -17,9 +17,12 @@ public class AppConfig {
 
     private String discord_token;
 
+    private String server_domain;
+
     public static AppConfig configTemplate() {
         return AppConfig.builder()
                         .discord_token("")
+                        .server_domain("")
                         .build();
     }
 }
