@@ -111,9 +111,4 @@ public class GeneralUtil {
         }
         return url;
     }
-
-    public static String getUid(String skGameRole) {
-        return skGameRole.split("_")[1];
-    }
-
 }

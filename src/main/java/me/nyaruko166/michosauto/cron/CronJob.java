@@ -38,13 +38,14 @@ public class CronJob {
         log.info("Starting daily check-in for endfield account");
         List<SkportAccount> lstSkAccount = skportService.getAllAccount();
         for (SkportAccount account : lstSkAccount) {
+            log.info("Starting daily check-in for account uid: {} | User: {} completed", account.getUid(), account.getOwnerName());
             SkportDTO skportDTO = skportService.attendanceCheck(account);
             if (!skportDTO.getHasCheckIn()) {
                 List<EndfieldReward> lstReward = skportService.claimAttendance(skportDTO);
                 bot.sendRewardInfo(lstReward, account);
-                log.info("Daily check-in for account uid: {} completed", account.getSkGameRole().split("_")[1]);
+                log.info("Daily check-in for account uid: {} | User: {} completed", account.getUid(), account.getOwnerName());
             } else {
-                log.info("Endfield UID {} has already checked in today.", skportDTO.getSkGameRole().split("_")[1]);
+                log.info("Endfield UID {} | User: {} has already checked in today.", account.getUid(), account.getOwnerName());
             }
         }
     }

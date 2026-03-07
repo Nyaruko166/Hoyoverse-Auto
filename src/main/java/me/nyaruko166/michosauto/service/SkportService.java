@@ -78,17 +78,20 @@ public class SkportService {
         JsonObject jsonRes = HttpUtil.getRequest(baseUrl + signInUrl, endfieldHeader);
         if (jsonRes.get("code").getAsInt() == 0) {
             Boolean hasCheckIn = jsonRes.get("data").getAsJsonObject().get("hasToday").getAsBoolean();
-            JsonArray calendar = jsonRes.getAsJsonObject("data").getAsJsonArray("calendar");
-            String todayRewardId = "";
-            for (int i = calendar.size() - 1; i >= 0; i--) {
-                JsonObject reward = calendar.get(i).getAsJsonObject();
-                if (reward.get("done").getAsBoolean()) {
-                    todayRewardId = reward.get("awardId").getAsString();
-                    break;
+            EndfieldReward reward = null;
+            if (hasCheckIn) {
+                JsonArray calendar = jsonRes.getAsJsonObject("data").getAsJsonArray("calendar");
+                String todayRewardId = "";
+                for (int i = calendar.size() - 1; i >= 0; i--) {
+                    JsonObject rewardJson = calendar.get(i).getAsJsonObject();
+                    if (rewardJson.get("done").getAsBoolean()) {
+                        todayRewardId = rewardJson.get("awardId").getAsString();
+                        break;
+                    }
                 }
+                JsonObject resourceInfoMap = jsonRes.getAsJsonObject("data").getAsJsonObject("resourceInfoMap");
+                reward = gson.fromJson(resourceInfoMap.getAsJsonObject(todayRewardId).toString(), EndfieldReward.class);
             }
-            JsonObject resourceInfoMap = jsonRes.getAsJsonObject("data").getAsJsonObject("resourceInfoMap");
-            EndfieldReward reward = gson.fromJson(resourceInfoMap.getAsJsonObject(todayRewardId).toString(), EndfieldReward.class);
             return SkportDTO.builder().hasCheckIn(hasCheckIn).headers(endfieldHeader).skGameRole(skportAccount.getSkGameRole()).lastReward(reward).build();
         }
         return null;

@@ -24,5 +24,4 @@ public class SkportDTO {
     private Headers headers;
 
     private Boolean hasCheckIn;
-
 }

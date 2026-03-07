@@ -75,3 +75,17 @@ jobs:
           strip_components: 1
           overwrite: true
           debug: true
+
+      - name: Restart michosauto.service
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            sudo systemctl restart michosauto.service
+            sleep 3
+            sudo systemctl is-active --quiet michosauto.service
+            sudo systemctl --no-pager --lines=20 status michosauto.service

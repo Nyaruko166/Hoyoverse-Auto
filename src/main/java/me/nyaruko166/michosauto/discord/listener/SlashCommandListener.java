@@ -70,13 +70,13 @@ public class SlashCommandListener extends ListenerAdapter {
                                 log.info("Stopped manual check-in since Account uid: {} already checked in today.", uid);
                                 sendEmbedMessageToChannel(event, new EmbedBuilder()
                                         .setColor(Color.GREEN)
-                                        .setFooter(GeneralUtil.getDiscordTimeStamp(event))
+                                        .setFooter(GeneralUtil.getDiscordTimeStamp(event),SkportService.endfieldIcon)
                                         .setTitle("You already check in today !!")
-                                        .setThumbnail(SkportService.endfieldIcon)
+                                        .setThumbnail(skportDTO.getLastReward().getRewardIcon())
+                                        .addField("UID: %s".formatted(account.getUid()), "", false)
                                         .addField("Check in rewards:", "%s x%s"
                                                 .formatted(skportDTO.getLastReward().getRewardName(),
                                                         skportDTO.getLastReward().getRewardCount()), false)
-                                        .setImage(skportDTO.getLastReward().getRewardIcon())
                                         .build());
                             } else {
                                 List<EndfieldReward> rewards = skportService.claimAttendance(skportDTO);
