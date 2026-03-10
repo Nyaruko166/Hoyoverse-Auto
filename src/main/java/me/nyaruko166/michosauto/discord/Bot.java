@@ -83,7 +83,7 @@ public class Bot {
             for (EndfieldReward reward : lstReward) {
                 lstEmbed.add(new EmbedBuilder()
                         .setColor(Color.GREEN)
-                        .setFooter(GeneralUtil.getDiscordTimeStamp(jda), reward.getRewardIcon())
+                        .setFooter(GeneralUtil.getDiscordTimeStamp(jda), SkportService.endfieldIcon)
                         .setTitle(lstReward.indexOf(reward) == 0 ?
                                 "Daily check in completed !!" : "Gift: #%s"
                                 .formatted(lstReward.indexOf(reward) + 1))
