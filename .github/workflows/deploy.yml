@@ -85,7 +85,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
-            sudo systemctl restart michosauto
+            systemctl --user restart michosauto
             sleep 3
-            sudo systemctl is-active --quiet michosauto
-            sudo systemctl --no-pager --lines=20 status michosauto
+            systemctl --user is-active --quiet michosauto
+            systemctl --user --no-pager --lines=20 status michosauto
