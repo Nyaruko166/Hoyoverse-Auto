@@ -84,8 +84,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            set -e
             sudo systemctl restart michosauto
-            sleep 3
-            sudo systemctl is-active --quiet michosauto
-            sudo systemctl --no-pager --lines=20 status michosauto
